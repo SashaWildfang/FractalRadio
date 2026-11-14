@@ -25,7 +25,7 @@ Get the latest `Radio-<version>.jar` from the **[Releases page](https://github.c
 - **World rules**: only play music in the worlds you choose
 - **Song sync**: on startup (or `/radio download`) the server matches the [song library](https://github.com/SashaWildfang/Radio-Songs): new and changed songs are downloaded, and songs removed there are removed from the server. Songs an admin added by hand are never touched.
 - **PlaceholderAPI** placeholders (optional)
-- Every message, colour and GUI label is editable in `messages.yml`
+- Every message, colour and GUI label is editable in `messages.yml`, shown in tiny small-caps text by default (`format.font`)
 - Player settings (volume, shuffle, repeat, sort, bar, favorites) are saved on the player
 
 ## Commands

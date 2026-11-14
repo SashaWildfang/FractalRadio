@@ -36,6 +36,7 @@ class MessagesTest {
     void missingKeysFallBackToBuiltInText() throws Exception {
         YamlConfiguration server = new YamlConfiguration();
         server.set("prefix", "[Radio] ");
+        server.set("format.font", "normal");
         Messages messages = Messages.of(server, builtIn(), LOGGER);
 
         String boss = plain(messages.component("bar.boss-playing",
@@ -58,6 +59,7 @@ class MessagesTest {
     void serverTextOverridesBuiltIn() throws Exception {
         YamlConfiguration server = new YamlConfiguration();
         server.set("bar.boss-playing", "Now: <title>");
+        server.set("format.font", "normal");
         Messages messages = Messages.of(server, builtIn(), LOGGER);
 
         assertEquals("Now: Animals", plain(messages.component("bar.boss-playing", Messages.arg("title", "Animals"))));
@@ -68,5 +70,33 @@ class MessagesTest {
     void missingLoreFallsBackToBuiltIn() throws Exception {
         Messages messages = Messages.of(new YamlConfiguration(), builtIn(), LOGGER);
         assertFalse(messages.lore("gui.page-next.lore", Messages.arg("page", 2), Messages.arg("pages", 5)).isEmpty());
+    }
+
+    /** The default font is small caps, applied to template text and to inserted values like song titles. */
+    @Test
+    void smallCapsIsTheDefaultAndCoversPlaceholders() throws Exception {
+        Messages messages = Messages.of(new YamlConfiguration(), builtIn(), LOGGER);
+        YamlConfiguration server = new YamlConfiguration();
+        server.set("test.line", "<primary>Now playing</primary> <title> 4m 2s!");
+        messages = Messages.of(server, builtIn(), LOGGER);
+
+        assertEquals("ɴᴏᴡ ᴘʟᴀʏɪɴɢ ᴀɴɪᴍᴀʟꜱ 4ᴍ 2ꜱ!",
+                plain(messages.component("test.line", Messages.arg("title", "Animals"))));
+    }
+
+    /** "normal" leaves text alone. */
+    @Test
+    void normalFontLeavesTextAlone() throws Exception {
+        YamlConfiguration server = new YamlConfiguration();
+        server.set("format.font", "normal");
+        server.set("test.line", "Now playing <title>");
+        Messages messages = Messages.of(server, builtIn(), LOGGER);
+
+        assertEquals("Now playing Animals", plain(messages.component("test.line", Messages.arg("title", "Animals"))));
+    }
+
+    @Test
+    void conversionKeepsDigitsAndSymbols() {
+        assertEquals("ᴀʙᴄ xʏᴢ 123 ★ » ü", SmallCaps.convert("ABC xyz 123 ★ » Ü"));
     }
 }

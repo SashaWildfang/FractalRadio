@@ -34,6 +34,11 @@ theme:
 prefix: "<brand><bold>Radio</bold></brand> <dark_gray>»</dark_gray> "
 
 format:
+  # Font for everything players see: chat, menu items, menu title, boss/action bar.
+  #   small-caps - tiny text: "Now Playing" shows as "ɴᴏᴡ ᴘʟᴀʏɪɴɢ" (song titles and names too)
+  #   normal     - regular text
+  # Write the text in this file normally; the plugin converts it as it's shown.
+  font: small-caps
   "on": "<good>on"
   "off": "<bad>off"
   # Progress bars in the GUI and boss/action bar.

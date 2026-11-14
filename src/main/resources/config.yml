@@ -6,7 +6,8 @@
 #
 #  Songs live in plugins/Radio/songs/. Each subfolder is a category
 #  in the GUI (e.g. songs/Christmas/Jingle Bells.nbs).
-#  Every message and GUI label is in messages.yml.
+#  Every message and GUI label is in messages.yml, along with the
+#  font (tiny "small caps" text or normal): see format.font there.
 #  Apply changes with /radio reload.
 
 # Do not change. Used to upgrade this file in future versions.

@@ -40,9 +40,16 @@ public final class Messages {
     private final String barFilled;
     private final String barEmpty;
     private final int barLength;
+    /** format.font: small-caps turns every letter shown to players into tiny text. */
+    private final boolean smallCaps;
 
     private Messages(YamlConfiguration yaml, Logger logger) {
         this.yaml = yaml;
+        String font = text("format.font", "small-caps").trim();
+        this.smallCaps = !font.equalsIgnoreCase("normal");
+        if (!font.equalsIgnoreCase("normal") && !font.equalsIgnoreCase("small-caps")) {
+            logger.warning("messages.yml format.font: unknown value '" + font + "', using small-caps");
+        }
 
         List<String> gradient = yaml.getStringList("theme.gradient");
         this.gradientOpen = gradient.size() >= 2 ? "<gradient:" + String.join(":", gradient) + ">" : "<gradient:#8E2DE2:#E58BFF>";
@@ -51,6 +58,7 @@ public final class Messages {
                 colour("primary", logger), colour("secondary", logger), colour("accent", logger),
                 colour("muted", logger), colour("good", logger), colour("bad", logger));
         Component prefix = MM.deserialize(brand(text("prefix", "")), colours);
+        if (smallCaps) prefix = SmallCaps.apply(prefix);
         this.theme = TagResolver.resolver(colours, Placeholder.component("prefix", prefix));
 
         this.on = component("format.on");
@@ -187,7 +195,9 @@ public final class Messages {
     }
 
     private Component parse(String template, TagResolver... args) {
-        return MM.deserialize(brand(template), TagResolver.resolver(theme, TagResolver.resolver(args)));
+        Component component = MM.deserialize(brand(template), TagResolver.resolver(theme, TagResolver.resolver(args)));
+        // Applied after placeholders are filled in, so song titles and player names are converted too.
+        return smallCaps ? SmallCaps.apply(component) : component;
     }
 
     private String brand(String template) {
