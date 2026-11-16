@@ -210,7 +210,7 @@ public final class Messages {
     /** <left-click> <right-click> <click> <shift>: a picture from the pack (font fractal:lobby), or the words. */
     private TagResolver clicks() {
         return TagResolver.resolver(click("left-click", '\uF010', "Left-click"), click("right-click", '\uF011', "Right-click"),
-                click("click", '\uF012', "Click"), click("shift", '\uF013', "Shift + "));
+                click("click", '\uF010', "Click"), click("shift", '\uF013', "Shift + "));
     }
 
     private TagResolver click(String tag, char glyph, String words) {
