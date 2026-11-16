@@ -87,7 +87,7 @@ public final class RadioMenu implements InventoryHolder {
         this.service = service;
         this.viewer = viewer.getUniqueId();
         this.state = state;
-        this.title = title(plugin.messages(), state);
+        this.title = customBackground(plugin) ? customTitle(plugin.messages(), state) : title(plugin.messages(), state);
         this.inventory = Bukkit.createInventory(this, SIZE, title);
     }
 
@@ -109,6 +109,32 @@ public final class RadioMenu implements InventoryHolder {
         return messages.component("gui.title", Messages.arg("view", view));
     }
 
+    /** Whether to draw the menu with the Fractal Lobby resource pack's background (gui.custom-background). */
+    static boolean customBackground(Radio plugin) {
+        return plugin.getConfig().getBoolean("gui.custom-background", false);
+    }
+
+    /**
+     * The title with the pack's Radio background (font fractal:lobby, U+F1B6) drawn behind the menu, then
+     * which songs are showing. The shift characters move to the menu's edge and back.
+     */
+    static Component customTitle(Messages messages, MenuState state) {
+        Component view = switch (state.view) {
+            case CATEGORIES -> messages.component("gui.views.categories");
+            case QUEUE -> messages.component("gui.views.queue");
+            case SONGS -> filterName(messages, state);
+        };
+        return Component.text().append(Component.text("\uF001\uF1B6\uF002")
+                .font(net.kyori.adventure.key.Key.key("fractal", "lobby"))
+                .color(net.kyori.adventure.text.format.NamedTextColor.WHITE)).append(view).build();
+    }
+
+    /** With the custom background, gives a button the pack's icon fractal:menu/NAME. */
+    private ItemStack icon(ItemStack item, String name) {
+        if (customBackground(plugin)) item.editMeta(meta -> meta.setItemModel(new org.bukkit.NamespacedKey("fractal", "menu/" + name)));
+        return item;
+    }
+
     private static Component filterName(Messages messages, MenuState state) {
         if (state.search != null) return messages.component("gui.views.search", Messages.arg("query", state.search));
         if (state.favoritesOnly) return messages.component("gui.views.favorites");
@@ -126,15 +152,19 @@ public final class RadioMenu implements InventoryHolder {
         Song current = audible.current();
         drawnForSong = current == null ? null : current.id();
 
-        ItemStack dark = pane(Material.BLACK_STAINED_GLASS_PANE);
-        ItemStack accent = pane(Material.PURPLE_STAINED_GLASS_PANE);
-        for (int slot = 0; slot < SIZE; slot++) {
-            int column = slot % 9;
-            boolean side = slot >= 9 && slot < 45 && (column == 0 || column == 8);
-            inventory.setItem(slot, side ? accent : dark);
+        if (customBackground(plugin)) {
+            inventory.clear(); // the resource pack's background draws the menu
+        } else {
+            ItemStack dark = pane(Material.BLACK_STAINED_GLASS_PANE);
+            ItemStack accent = pane(Material.PURPLE_STAINED_GLASS_PANE);
+            for (int slot = 0; slot < SIZE; slot++) {
+                int column = slot % 9;
+                boolean side = slot >= 9 && slot < 45 && (column == 0 || column == 8);
+                inventory.setItem(slot, side ? accent : dark);
+            }
+            inventory.setItem(3, pane(Material.MAGENTA_STAINED_GLASS_PANE));
+            inventory.setItem(5, pane(Material.MAGENTA_STAINED_GLASS_PANE));
         }
-        inventory.setItem(3, pane(Material.MAGENTA_STAINED_GLASS_PANE));
-        inventory.setItem(5, pane(Material.MAGENTA_STAINED_GLASS_PANE));
 
         entries.clear();
         List<Object> items = switch (state.view) {
@@ -166,12 +196,12 @@ public final class RadioMenu implements InventoryHolder {
         }
 
         if (state.page > 0) {
-            inventory.setItem(PAGE_BACK, item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-back.name", pageArgs(state.page + 1, pages)),
-                    plugin.messages().lore("gui.page-back.lore", pageArgs(state.page + 1, pages)), false));
+            inventory.setItem(PAGE_BACK, icon(item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-back.name", pageArgs(state.page + 1, pages)),
+                    plugin.messages().lore("gui.page-back.lore", pageArgs(state.page + 1, pages)), false), "back"));
         }
         if (state.page < pages - 1) {
-            inventory.setItem(PAGE_NEXT, item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-next.name", pageArgs(state.page + 1, pages)),
-                    plugin.messages().lore("gui.page-next.lore", pageArgs(state.page + 1, pages)), false));
+            inventory.setItem(PAGE_NEXT, icon(item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-next.name", pageArgs(state.page + 1, pages)),
+                    plugin.messages().lore("gui.page-next.lore", pageArgs(state.page + 1, pages)), false), "next"));
         }
 
         renderHeader(player, own, audible);
@@ -206,8 +236,8 @@ public final class RadioMenu implements InventoryHolder {
 
         Component query = state.search == null ? Component.empty()
                 : m.component("gui.search.current", Messages.arg("query", state.search));
-        inventory.setItem(SEARCH, item(Material.SPYGLASS, m.item("gui.search.name"),
-                m.lore("gui.search.lore", Messages.arg("query", query)), state.search != null));
+        inventory.setItem(SEARCH, icon(item(Material.SPYGLASS, m.item("gui.search.name"),
+                m.lore("gui.search.lore", Messages.arg("query", query)), state.search != null), "search"));
 
         inventory.setItem(NOW_PLAYING, nowPlayingItem(player, own, audible));
 

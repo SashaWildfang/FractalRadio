@@ -113,6 +113,11 @@ gui:
   # Play a click sound when a button is pressed.
   click-sound: true
 
+  # Draw the menu with the Fractal Lobby resource pack's background and
+  # icons instead of glass panes. Only turn this on where players have
+  # that pack (the Lobby's FractalLobby.zip).
+  custom-background: false
+
   # Icon for each category in the category picker. Any item name works:
   # https://jd.papermc.io/paper/1.21.11/org/bukkit/Material.html
   # Categories not listed here use "default".
