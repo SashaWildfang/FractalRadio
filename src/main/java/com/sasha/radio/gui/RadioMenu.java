@@ -115,18 +115,42 @@ public final class RadioMenu implements InventoryHolder {
     }
 
     /**
-     * The title with the pack's Radio background (font fractal:lobby, U+F1B6) drawn behind the menu, then
-     * which songs are showing. The shift characters move to the menu's edge and back.
+     * The title: just the pack's Radio background (font fractal:lobby, U+F1B6), which has "Radio" drawn on
+     * it. The shift characters move to the menu's edge and back.
      */
     static Component customTitle(Messages messages, MenuState state) {
-        Component view = switch (state.view) {
-            case CATEGORIES -> messages.component("gui.views.categories");
-            case QUEUE -> messages.component("gui.views.queue");
-            case SONGS -> filterName(messages, state);
-        };
-        return Component.text().append(Component.text("\uF001\uF1B6\uF002")
-                .font(net.kyori.adventure.key.Key.key("fractal", "lobby"))
-                .color(net.kyori.adventure.text.format.NamedTextColor.WHITE)).append(view).build();
+        return Component.text("\uF001\uF1B6\uF002").font(net.kyori.adventure.key.Key.key("fractal", "lobby"))
+                .color(net.kyori.adventure.text.format.NamedTextColor.WHITE);
+    }
+
+    /** The pack's icon (fractal:radio/NAME) for each item the menu uses. */
+    private static final Map<Material, String> ICONS = Map.ofEntries(
+            Map.entry(Material.BOOKSHELF, "radio/categories"), Map.entry(Material.NETHER_STAR, "radio/favorites"),
+            Map.entry(Material.WRITABLE_BOOK, "radio/queue"), Map.entry(Material.JUKEBOX, "radio/station"),
+            Map.entry(Material.HOPPER, "radio/sort"), Map.entry(Material.NOTE_BLOCK, "radio/volume"),
+            Map.entry(Material.ENDER_EYE, "radio/shuffle"), Map.entry(Material.ENDER_PEARL, "radio/shuffle-off"),
+            Map.entry(Material.ECHO_SHARD, "radio/previous"), Map.entry(Material.PURPLE_DYE, "radio/pause"),
+            Map.entry(Material.LIME_DYE, "radio/play"), Map.entry(Material.AMETHYST_SHARD, "radio/skip"),
+            Map.entry(Material.REPEATER, "radio/repeat"), Map.entry(Material.DRAGON_HEAD, "radio/bar-boss"),
+            Map.entry(Material.NAME_TAG, "radio/bar-action"), Map.entry(Material.GRAY_DYE, "radio/bar-off"),
+            Map.entry(Material.STRUCTURE_VOID, "radio/empty"), Map.entry(Material.SPECTRAL_ARROW, "menu/back"));
+
+    /** With the custom background, swaps every item that has no icon yet for the pack's icon. */
+    private void applyIcons() {
+        if (!customBackground(plugin)) return;
+        for (int slot = 0; slot < SIZE; slot++) {
+            ItemStack item = inventory.getItem(slot);
+            if (item == null || item.getItemMeta() == null || item.getItemMeta().hasItemModel()) continue;
+            String icon = ICONS.get(item.getType());
+            if (icon == null) {
+                int disc = java.util.Arrays.asList(DISCS).indexOf(item.getType());
+                if (disc >= 0) icon = "radio/disc_" + disc % 5;
+            }
+            if (icon == null) continue;
+            String path = icon;
+            item.editMeta(meta -> meta.setItemModel(new org.bukkit.NamespacedKey("fractal", path)));
+            inventory.setItem(slot, item);
+        }
     }
 
     /** With the custom background, gives a button the pack's icon fractal:menu/NAME. */
@@ -206,6 +230,7 @@ public final class RadioMenu implements InventoryHolder {
 
         renderHeader(player, own, audible);
         renderFooter(own);
+        applyIcons();
     }
 
     /** Redraws the live parts (progress, play state). Redraws everything if the song changed. Runs every second. */
@@ -221,6 +246,7 @@ public final class RadioMenu implements InventoryHolder {
         RadioSession own = sessions.session(player);
         renderHeader(player, own, audible);
         renderFooter(own);
+        applyIcons();
     }
 
     private void renderHeader(Player player, RadioSession own, RadioSession audible) {
