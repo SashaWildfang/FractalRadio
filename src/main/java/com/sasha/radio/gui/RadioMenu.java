@@ -135,7 +135,7 @@ public final class RadioMenu implements InventoryHolder {
             Map.entry(Material.LIME_DYE, "radio/play"), Map.entry(Material.AMETHYST_SHARD, "radio/skip"),
             Map.entry(Material.REPEATER, "radio/repeat"), Map.entry(Material.DRAGON_HEAD, "radio/bar-boss"),
             Map.entry(Material.NAME_TAG, "radio/bar-action"), Map.entry(Material.GRAY_DYE, "radio/bar-off"),
-            Map.entry(Material.STRUCTURE_VOID, "radio/empty"), Map.entry(Material.SPECTRAL_ARROW, "menu/back"),
+            Map.entry(Material.STRUCTURE_VOID, "menu/none"), Map.entry(Material.SPECTRAL_ARROW, "menu/back"),
             Map.entry(Material.BARRIER, "radio/close"));
 
     /** With the custom background, swaps every item that has no icon yet for the pack's icon. */
@@ -316,7 +316,8 @@ public final class RadioMenu implements InventoryHolder {
 
         inventory.setItem(VOLUME, item(Material.NOTE_BLOCK,
                 m.item("gui.volume.name", Messages.arg("volume", settings.volume())),
-                m.lore("gui.volume.lore", Messages.arg("bar", m.progressBar(settings.volume() / 100.0))), false));
+                m.lore("gui.volume.lore", TagResolver.resolver(Messages.arg("volume", settings.volume()),
+                        Messages.arg("bar", m.progressBar(settings.volume() / 100.0)))), false));
 
         inventory.setItem(SHUFFLE, item(settings.shuffle() ? Material.ENDER_EYE : Material.ENDER_PEARL,
                 m.item("gui.shuffle.name", Messages.arg("state", m.onOff(settings.shuffle()))),

@@ -39,6 +39,7 @@ public final class Messages {
     private final Component off;
     private final String barFilled;
     private final String barEmpty;
+    private final String barKnob;
     private final int barLength;
     /** format.font: small-caps turns every letter shown to players into tiny text. */
     private final boolean smallCaps;
@@ -63,8 +64,9 @@ public final class Messages {
 
         this.on = component("format.on");
         this.off = component("format.off");
-        this.barFilled = brand(text("format.progress-filled", "▰"));
-        this.barEmpty = brand(text("format.progress-empty", "▱"));
+        this.barFilled = text("format.progress-filled", "━");
+        this.barKnob = brand(text("format.progress-knob", "<white>●"));
+        this.barEmpty = brand(text("format.progress-empty", "<dark_gray>━"));
         this.barLength = Math.max(1, Math.min(60, yaml.getInt("format.progress-length")));
     }
 
@@ -170,8 +172,11 @@ public final class Messages {
     /** e.g. ▰▰▰▰▱▱▱▱ for 0.5. */
     public Component progressBar(double fraction) {
         int filled = (int) Math.round(Math.max(0, Math.min(1, fraction)) * barLength);
+        // The played part in the brand gradient, a knob where the song is, then the rest.
         StringBuilder bar = new StringBuilder();
-        for (int i = 0; i < barLength; i++) bar.append(i < filled ? barFilled : barEmpty);
+        if (filled > 0) bar.append(gradientOpen).append(barFilled.repeat(filled)).append("</gradient>");
+        bar.append(barKnob);
+        for (int i = filled; i < barLength; i++) bar.append(barEmpty);
         return MM.deserialize(bar.toString(), theme);
     }
 

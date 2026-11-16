@@ -51,7 +51,7 @@ class MessagesTest {
                 Messages.arg("title", "Animals"), Messages.arg("artist", "Martin Garrix"),
                 Messages.arg("elapsed", "1m 3s"), Messages.arg("length", "4m 2s"),
                 Messages.arg("source", Component.empty())));
-        assertTrue(action.contains("1m 3s / 4m 2s"), "the action bar keeps the time: " + action);
+        assertTrue(action.contains("1m 3s") && action.contains("4m 2s"), "the action bar keeps the time: " + action);
     }
 
     /** Text the server owner changed wins over the built-in text. */
