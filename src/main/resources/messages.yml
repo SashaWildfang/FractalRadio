@@ -406,6 +406,10 @@ gui:
     name: "<primary>Previous page"   # <page> <pages>
     lore:
       - "<muted>Page <white><page></white> of <pages>"
+  page-last:   # the greyed-out arrow when there's no next page (custom background only)
+    name: "<muted>Last page"
+    lore:
+      - "<muted>Page <white><page></white> of <pages>"
   page-next:
     name: "<primary>Next page"   # <page> <pages>
     lore:

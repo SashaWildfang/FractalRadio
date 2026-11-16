@@ -81,6 +81,8 @@ public final class RadioMenu implements InventoryHolder {
     private final Map<Integer, Object> entries = new HashMap<>();
     /** Song the grid was last drawn for, so a song change redraws the "now playing" badge. */
     private String drawnForSong;
+    /** Whether the page drawn last has another one after it. */
+    private boolean hasNextPage;
 
     RadioMenu(Radio plugin, MenuService service, Player viewer, MenuState state) {
         this.plugin = plugin;
@@ -233,9 +235,11 @@ public final class RadioMenu implements InventoryHolder {
             inventory.setItem(PAGE_NEXT, icon(item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-next.name", pageArgs(state.page + 1, pages)),
                     plugin.messages().lore("gui.page-next.lore", pageArgs(state.page + 1, pages)), false), "next"));
         } else if (customBackground(plugin)) {
-            // No next page: cover the corner's slot so it's plain panel.
-            inventory.setItem(PAGE_NEXT, icon(pane(Material.GRAY_STAINED_GLASS_PANE), "radio/blank"));
+            // No next page: a greyed-out arrow, so the corner is never empty.
+            inventory.setItem(PAGE_NEXT, icon(item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-last.name"),
+                    plugin.messages().lore("gui.page-last.lore", pageArgs(state.page + 1, pages)), false), "radio/next-off"));
         }
+        hasNextPage = state.page < pages - 1;
 
         renderHeader(player, own, audible);
         renderFooter(own);
@@ -490,7 +494,10 @@ public final class RadioMenu implements InventoryHolder {
                 }
                 state.page--;
             }
-            case PAGE_NEXT -> state.page++;
+            case PAGE_NEXT -> {
+                if (!hasNextPage) return; // the greyed-out arrow
+                state.page++;
+            }
             case VOLUME -> {
                 int step = click.isShiftClick() ? 1 : 10;
                 own.setVolume(own.settings().volume() + (click.isRightClick() ? -step : step));
