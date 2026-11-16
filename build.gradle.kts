@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.sasha"
-version = "2.7.1"
+version = "2.8.0"
 description = "Lobby radio for Fractal Network: note block (.nbs) songs with a GUI. Built by Sasha Wildfang."
 
 repositories {

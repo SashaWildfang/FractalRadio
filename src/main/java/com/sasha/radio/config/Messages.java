@@ -194,8 +194,31 @@ public final class Messages {
         return value != null ? value : fallback;
     }
 
+
+    /** Whether hints show the resource pack's mouse and Shift pictures instead of words like "Left-click". */
+    private volatile boolean buttonIcons;
+
+    public void buttonIcons(boolean on) {
+        this.buttonIcons = on;
+    }
+
+    /** <left-click> <right-click> <click> <shift>: a picture from the pack (font fractal:lobby), or the words. */
+    private TagResolver clicks() {
+        return TagResolver.resolver(click("left-click", '\uF010', "Left-click"), click("right-click", '\uF011', "Right-click"),
+                click("click", '\uF012', "Click"), click("shift", '\uF013', "Shift + "));
+    }
+
+    private TagResolver click(String tag, char glyph, String words) {
+        Component shown = buttonIcons
+                ? Component.text(glyph).font(net.kyori.adventure.key.Key.key("fractal", "lobby"))
+                        .color(net.kyori.adventure.text.format.NamedTextColor.WHITE)
+                        .shadowColor(net.kyori.adventure.text.format.ShadowColor.none())
+                : Component.text(words);
+        return TagResolver.resolver(tag, net.kyori.adventure.text.minimessage.tag.Tag.selfClosingInserting(shown));
+    }
+
     private Component parse(String template, TagResolver... args) {
-        Component component = MM.deserialize(brand(template), TagResolver.resolver(theme, TagResolver.resolver(args)));
+        Component component = MM.deserialize(brand(template), TagResolver.resolver(theme, clicks(), TagResolver.resolver(args)));
         // Applied after placeholders are filled in, so song titles and player names are converted too.
         return smallCaps ? SmallCaps.apply(component) : component;
     }

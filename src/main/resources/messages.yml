@@ -20,7 +20,7 @@
 
 # Do not change. When a plugin update ships new text, your old file is
 # saved as messages.yml.old and replaced.
-messages-version: 4
+messages-version: 5
 
 theme:
   primary: "#B266FF"
@@ -110,7 +110,7 @@ queue:
   full: "<prefix><bad>Up next is full (<limit> songs)."   # <limit>
   removed: "<prefix><secondary>Removed <primary><title></primary> from Up next."   # <title>
   cleared: "<prefix><secondary>Cleared Up next."
-  empty: "<prefix><muted>Up next is empty. Right-click a song in <primary>/radio</primary> to add one."
+  empty: "<prefix><muted>Up next is empty. <right-click> a song in <primary>/radio</primary> to add one."
   header: "<prefix><secondary>Up next <muted>(<count>)</muted>:"   # <count>
   line: " <muted><position>. <secondary><title></secondary> <dark_gray>- <muted><artist>"   # <position> <title> <artist>
 
@@ -207,17 +207,17 @@ gui:
       - "<muted><length> · <category>"
       - "<badges>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to play now"
-      - "<dark_gray>▸ <accent>Right-click</accent> <muted>to play it next"
-      - "<dark_gray>▸ <accent>Shift + Left-click</accent> <muted>to add to favorites"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to play now"
+      - "<dark_gray>▸ <accent><right-click></accent> <muted>to play it next"
+      - "<dark_gray>▸ <accent><shift><left-click></accent> <muted>to add to favorites"
     lore-favorite:
       - "<muted>by <white><artist>"
       - "<muted><length> · <category>"
       - "<badges>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to play now"
-      - "<dark_gray>▸ <accent>Right-click</accent> <muted>to play it next"
-      - "<dark_gray>▸ <accent>Shift + Left-click</accent> <muted>to remove from favorites"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to play now"
+      - "<dark_gray>▸ <accent><right-click></accent> <muted>to play it next"
+      - "<dark_gray>▸ <accent><shift><left-click></accent> <muted>to remove from favorites"
     badge-playing: "<good>▶ Playing now"
     badge-favorite: "<accent>★ Favorite"
     badge-queued: "<primary>#<position> in Up next"   # <position>
@@ -229,7 +229,7 @@ gui:
       - "<muted>by <white><artist>"
       - "<muted><length> · <category>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to remove from Up next"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to remove from Up next"
 
   # The disc at the top. <title> <artist> <category> <elapsed> <length> <bar> <next> <source>
   now-playing:
@@ -243,14 +243,14 @@ gui:
       - ""
       - "<muted>Up next: <white><next>"
       - ""
-      - "<dark_gray>▸ <accent>Shift + Left-click</accent> <muted>to favorite this song"
+      - "<dark_gray>▸ <accent><shift><left-click></accent> <muted>to favorite this song"
     source: "<muted>Listening with <primary><name>"   # <name>
   nothing-playing:
     name: "<muted>Nothing playing"
     lore:
       - "<muted>Your radio is quiet."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>any song below to start"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>any song below to start"
 
   empty:
     name: "<muted>No songs here"
@@ -266,36 +266,36 @@ gui:
       - "<muted>Browse songs by genre."
       - "<muted>Showing: <white><view>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to pick a genre"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to pick a genre"
   # A genre in the genre list. <category> <count>
   category:
     name: "<secondary><category>"
     lore:
       - "<muted><count> songs"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to browse"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to browse"
   all-songs:
     name: "<secondary>All songs"
     lore:
       - "<muted>Every song, <count> in total."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to browse"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to browse"
   favorites:
     name: "<accent>Favorites"
     lore:
       - "<muted>The songs you starred."
       - "<muted>You have <white><count></white> favorites."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to show only favorites"
-      - "<dark_gray>▸ <muted>Star a song with <accent>Shift + Left-click"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to show only favorites"
+      - "<dark_gray>▸ <muted>Star a song with <accent><shift><left-click>"
   search:
     name: "<primary>Search"
     lore:
       - "<muted>Find a song by title or artist."
       - "<query>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to type a search in chat"
-      - "<dark_gray>▸ <accent>Right-click</accent> <muted>to clear the search"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to type a search in chat"
+      - "<dark_gray>▸ <accent><right-click></accent> <muted>to clear the search"
     current: "<muted>Searching for: <white>\"<query>\""   # <query>
   queue:
     name: "<primary>Up next <muted>(<count>)"
@@ -303,13 +303,13 @@ gui:
       - "<muted>Songs you picked to play next,"
       - "<muted>before your radio carries on."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to see the list"
-      - "<dark_gray>▸ <muted>Add songs with <accent>Right-click"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to see the list"
+      - "<dark_gray>▸ <muted>Add songs with <accent><right-click>"
   queue-back:
     name: "<primary>Back to songs"
     lore:
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to go back"
-      - "<dark_gray>▸ <accent>Right-click</accent> <muted>to clear Up next"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to go back"
+      - "<dark_gray>▸ <accent><right-click></accent> <muted>to clear Up next"
   # The lobby station. <name> <title> <listeners>
   station:
     name: "<name>"
@@ -320,14 +320,14 @@ gui:
       - "<muted>Playing: <white><title>"
       - "<muted>Listening: <white><listeners>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to tune in"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to tune in"
     lore-listening:
       - "<good>You're tuned in."
       - ""
       - "<muted>Playing: <white><title>"
       - "<muted>Listening: <white><listeners>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to go back to your own radio"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to go back to your own radio"
   sort:
     name: "<primary>Sort: <white><mode>"   # <mode>
     lore:
@@ -335,7 +335,7 @@ gui:
       - ""
       - "<options>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>for the next order"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>for the next order"
     option: "<dark_gray>  <muted><mode>"
     option-selected: "<accent>» <white><mode>"
 
@@ -346,49 +346,49 @@ gui:
     lore:
       - "<bar>"
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>for +10"
-      - "<dark_gray>▸ <accent>Right-click</accent> <muted>for -10"
-      - "<dark_gray>▸ <accent>Shift + Left-click</accent> <muted>for +1"
-      - "<dark_gray>▸ <accent>Shift + Right-click</accent> <muted>for -1"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>for +10"
+      - "<dark_gray>▸ <accent><right-click></accent> <muted>for -10"
+      - "<dark_gray>▸ <accent><shift><left-click></accent> <muted>for +1"
+      - "<dark_gray>▸ <accent><shift><right-click></accent> <muted>for -1"
   shuffle:
     name: "<primary>Shuffle: <state>"   # <state>
     lore:
       - "<muted>Plays songs in a random order."
       - "<muted>Every song plays once before any repeat."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to turn on or off"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to turn on or off"
   previous:
     name: "<primary>Previous"
     lore:
       - "<muted>Starts the song over. If it only"
       - "<muted>just started, goes back a song."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to go back"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to go back"
   play:
     name: "<good>Play"
     lore:
       - "<muted>Your radio is paused."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to play"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to play"
   pause:
     name: "<primary>Pause"
     lore:
       - "<muted>Your radio is playing."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to pause"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to pause"
   skip:
     name: "<primary>Skip"
     lore:
       - "<muted>Jumps to the next song."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to skip"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to skip"
   repeat:
     name: "<primary>Repeat: <state>"   # <state>
     lore:
       - "<muted>Plays the same song again"
       - "<muted>each time it ends."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to turn on or off"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to turn on or off"
   bar:
     name: "<primary>Song display: <white><mode>"   # <mode>
     lore:
@@ -396,7 +396,7 @@ gui:
       - "<muted>while it plays: boss bar,"
       - "<muted>action bar, or off."
       - ""
-      - "<dark_gray>▸ <accent>Left-click</accent> <muted>to switch"
+      - "<dark_gray>▸ <accent><left-click></accent> <muted>to switch"
   close:   # in the page-back corner on the first page
     name: "<bad>Close"
     lore:

@@ -148,6 +148,7 @@ public final class Radio extends JavaPlugin {
     private void loadSettings() {
         config = RadioConfig.load(getConfig(), getLogger());
         messages = Messages.load(this);
+        messages.buttonIcons(getConfig().getBoolean("gui.custom-background", false));
     }
 
     private Path songFolder() {
