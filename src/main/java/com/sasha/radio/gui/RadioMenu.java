@@ -156,7 +156,8 @@ public final class RadioMenu implements InventoryHolder {
 
     /** With the custom background, gives a button the pack's icon fractal:menu/NAME. */
     private ItemStack icon(ItemStack item, String name) {
-        if (customBackground(plugin)) item.editMeta(meta -> meta.setItemModel(new org.bukkit.NamespacedKey("fractal", "menu/" + name)));
+        String path = name.contains("/") ? name : "menu/" + name;
+        if (customBackground(plugin)) item.editMeta(meta -> meta.setItemModel(new org.bukkit.NamespacedKey("fractal", path)));
         return item;
     }
 
@@ -231,6 +232,9 @@ public final class RadioMenu implements InventoryHolder {
         if (state.page < pages - 1) {
             inventory.setItem(PAGE_NEXT, icon(item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-next.name", pageArgs(state.page + 1, pages)),
                     plugin.messages().lore("gui.page-next.lore", pageArgs(state.page + 1, pages)), false), "next"));
+        } else if (customBackground(plugin)) {
+            // No next page: cover the corner's slot so it's plain panel.
+            inventory.setItem(PAGE_NEXT, icon(pane(Material.GRAY_STAINED_GLASS_PANE), "radio/blank"));
         }
 
         renderHeader(player, own, audible);
@@ -268,7 +272,7 @@ public final class RadioMenu implements InventoryHolder {
         Component query = state.search == null ? Component.empty()
                 : m.component("gui.search.current", Messages.arg("query", state.search));
         inventory.setItem(SEARCH, icon(item(Material.SPYGLASS, m.item("gui.search.name"),
-                m.lore("gui.search.lore", Messages.arg("query", query)), state.search != null), "search"));
+                m.lore("gui.search.lore", Messages.arg("query", query)), state.search != null), "radio/search"));
 
         inventory.setItem(NOW_PLAYING, nowPlayingItem(player, own, audible));
 
@@ -390,8 +394,19 @@ public final class RadioMenu implements InventoryHolder {
         }
         TagResolver args = TagResolver.resolver(Messages.arg("category", category),
                 Messages.arg("count", library.categories().getOrDefault(category, List.of()).size()));
-        return item(plugin.radioConfig().categoryIcon(category), m.item("gui.category.name", args),
-                m.lore("gui.category.lore", args), category.equals(state.category));
+        return icon(item(plugin.radioConfig().categoryIcon(category), m.item("gui.category.name", args),
+                m.lore("gui.category.lore", args), category.equals(state.category)), "radio/genre/" + genreIcon(category));
+    }
+
+    /** Genres the Fractal Lobby pack has an icon for; any other genre gets the music note. */
+    private static final java.util.Set<String> GENRE_ICONS = java.util.Set.of("anime", "anthems", "christmas", "classical-jazz",
+            "electronic", "games", "hip-hop", "memes", "pop", "rock", "tv-film");
+
+    /** A genre's icon name: "Classical & Jazz" -> classical-jazz, "TV & Film" -> tv-film. */
+    static String genreIcon(String category) {
+        String slug = category.toLowerCase(java.util.Locale.ROOT).replace("&", " ").replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-|-$", "");
+        return GENRE_ICONS.contains(slug) ? slug : "default";
     }
 
     private List<Song> visibleSongs(RadioSession own) {

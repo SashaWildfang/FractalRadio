@@ -20,7 +20,7 @@
 
 # Do not change. When a plugin update ships new text, your old file is
 # saved as messages.yml.old and replaced.
-messages-version: 2
+messages-version: 3
 
 theme:
   primary: "#B266FF"
@@ -280,7 +280,7 @@ gui:
       - ""
       - "<dark_gray>▸ <accent>Left-click</accent> <muted>to browse"
   favorites:
-    name: "<accent>★ Favorites"
+    name: "<accent>Favorites"
     lore:
       - "<muted>The songs you starred."
       - "<muted>You have <white><count></white> favorites."
@@ -357,26 +357,26 @@ gui:
       - ""
       - "<dark_gray>▸ <accent>Left-click</accent> <muted>to turn on or off"
   previous:
-    name: "<primary>⏮ Previous"
+    name: "<primary>Previous"
     lore:
       - "<muted>Starts the song over. If it only"
       - "<muted>just started, goes back a song."
       - ""
       - "<dark_gray>▸ <accent>Left-click</accent> <muted>to go back"
   play:
-    name: "<good>▶ Play"
+    name: "<good>Play"
     lore:
       - "<muted>Your radio is paused."
       - ""
       - "<dark_gray>▸ <accent>Left-click</accent> <muted>to play"
   pause:
-    name: "<primary>⏸ Pause"
+    name: "<primary>Pause"
     lore:
       - "<muted>Your radio is playing."
       - ""
       - "<dark_gray>▸ <accent>Left-click</accent> <muted>to pause"
   skip:
-    name: "<primary>Skip ⏭"
+    name: "<primary>Skip"
     lore:
       - "<muted>Jumps to the next song."
       - ""
@@ -402,11 +402,11 @@ gui:
       - "<muted>Close the radio."
       - "<muted>Your music keeps playing."
   page-back:
-    name: "<primary>« Previous page"   # <page> <pages>
+    name: "<primary>Previous page"   # <page> <pages>
     lore:
       - "<muted>Page <white><page></white> of <pages>"
   page-next:
-    name: "<primary>Next page »"   # <page> <pages>
+    name: "<primary>Next page"   # <page> <pages>
     lore:
       - "<muted>Page <white><page></white> of <pages>"
   listening-blocked: "<prefix><bad>You're listening with <name>. Leave first to control your own radio."   # <name>
