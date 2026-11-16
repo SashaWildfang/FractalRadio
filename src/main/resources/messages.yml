@@ -20,7 +20,7 @@
 
 # Do not change. When a plugin update ships new text, your old file is
 # saved as messages.yml.old and replaced.
-messages-version: 3
+messages-version: 4
 
 theme:
   primary: "#B266FF"
@@ -151,12 +151,13 @@ bar:
     actionbar: "action bar"
     "off": "off"
   # Placeholders: <title> <artist> <elapsed> <length> <bar> <source>
+  # <eq> and <eq-mirror> are a little bouncing equalizer (flat while paused).
   # <source> is empty on your own radio, or the station/player name when listening along.
   # Boss bar text. The bar itself already shows how far the song is, so no time here.
-  boss-playing: "<secondary><title></secondary> <muted>· <artist><source>"
-  boss-paused: "<muted>⏸ <title> <dark_gray>|</dark_gray> <muted>paused<source>"
+  boss-playing: "<eq> <#E58BFF>♪</#E58BFF> <secondary><title></secondary> <muted>· <artist><source> <#B266FF>♫</#B266FF> <eq-mirror>"
+  boss-paused: "<eq> <muted>⏸ <title> · paused<source> <eq-mirror>"
   # Action bar text (it has no bar, so it shows the time).
-  playing: "<secondary><title></secondary> <muted>· <artist> <dark_gray>|</dark_gray> <muted><elapsed> / <length></muted><source>"
+  playing: "<#E58BFF>♪</#E58BFF> <secondary><title></secondary> <muted>· <artist> <dark_gray>|</dark_gray> <muted><elapsed> / <length></muted><source>"
   paused: "<muted>⏸ <title> <dark_gray>|</dark_gray> <muted>paused<source>"
   source: " <dark_gray>|</dark_gray> <primary><name>"   # <name>
 
