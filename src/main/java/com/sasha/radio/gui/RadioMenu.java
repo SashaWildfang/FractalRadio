@@ -133,7 +133,8 @@ public final class RadioMenu implements InventoryHolder {
             Map.entry(Material.LIME_DYE, "radio/play"), Map.entry(Material.AMETHYST_SHARD, "radio/skip"),
             Map.entry(Material.REPEATER, "radio/repeat"), Map.entry(Material.DRAGON_HEAD, "radio/bar-boss"),
             Map.entry(Material.NAME_TAG, "radio/bar-action"), Map.entry(Material.GRAY_DYE, "radio/bar-off"),
-            Map.entry(Material.STRUCTURE_VOID, "radio/empty"), Map.entry(Material.SPECTRAL_ARROW, "menu/back"));
+            Map.entry(Material.STRUCTURE_VOID, "radio/empty"), Map.entry(Material.SPECTRAL_ARROW, "menu/back"),
+            Map.entry(Material.BARRIER, "radio/close"));
 
     /** With the custom background, swaps every item that has no icon yet for the pack's icon. */
     private void applyIcons() {
@@ -222,6 +223,10 @@ public final class RadioMenu implements InventoryHolder {
         if (state.page > 0) {
             inventory.setItem(PAGE_BACK, icon(item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-back.name", pageArgs(state.page + 1, pages)),
                     plugin.messages().lore("gui.page-back.lore", pageArgs(state.page + 1, pages)), false), "back"));
+        } else {
+            // On the first page there's nothing to go back to: the corner closes the radio instead.
+            inventory.setItem(PAGE_BACK, item(Material.BARRIER, plugin.messages().item("gui.close.name"),
+                    plugin.messages().lore("gui.close.lore"), false));
         }
         if (state.page < pages - 1) {
             inventory.setItem(PAGE_NEXT, icon(item(Material.SPECTRAL_ARROW, plugin.messages().item("gui.page-next.name", pageArgs(state.page + 1, pages)),
@@ -462,7 +467,14 @@ public final class RadioMenu implements InventoryHolder {
                 own.setSort(own.settings().sort().next());
                 state.page = 0;
             }
-            case PAGE_BACK -> state.page--;
+            case PAGE_BACK -> {
+                if (state.page == 0) {
+                    sound(player, true);
+                    player.closeInventory();
+                    return;
+                }
+                state.page--;
+            }
             case PAGE_NEXT -> state.page++;
             case VOLUME -> {
                 int step = click.isShiftClick() ? 1 : 10;

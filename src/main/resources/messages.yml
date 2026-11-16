@@ -396,6 +396,11 @@ gui:
       - "<muted>action bar, or off."
       - ""
       - "<dark_gray>▸ <accent>Left-click</accent> <muted>to switch"
+  close:   # in the page-back corner on the first page
+    name: "<bad>Close"
+    lore:
+      - "<muted>Close the radio."
+      - "<muted>Your music keeps playing."
   page-back:
     name: "<primary>« Previous page"   # <page> <pages>
     lore:
