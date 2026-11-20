@@ -51,8 +51,8 @@ public final class RadioMenu implements InventoryHolder {
         for (int i = 0; i < GRID.length; i++) GRID[i] = (1 + i / 7) * 9 + 1 + i % 7;
     }
 
-    private static final int CATEGORIES = 0, FAVORITES = 1, SEARCH = 2, NOW_PLAYING = 4, QUEUE = 6, STATION = 7, SORT = 8;
-    private static final int PAGE_BACK = 45, VOLUME = 46, SHUFFLE = 47, PREVIOUS = 48, PLAY = 49, SKIP = 50,
+    static final int CATEGORIES = 0, FAVORITES = 1, SEARCH = 2, NOW_PLAYING = 4, QUEUE = 6, STATION = 7, SORT = 8;
+    static final int PAGE_BACK = 45, VOLUME = 46, SHUFFLE = 47, PREVIOUS = 48, PLAY = 49, SKIP = 50,
             REPEAT = 51, BAR = 52, PAGE_NEXT = 53;
     private static final int EMPTY_SLOT = 22;
 
@@ -439,11 +439,39 @@ public final class RadioMenu implements InventoryHolder {
 
     // ---------------------------------------------------------------- clicks
 
+    /**
+     * Whether a click is one the item's description offers. Every button only reacts to the exact clicks
+     * its hint lines name (e.g. Sort says Left-click, so Right-click or Shift-click does nothing), and
+     * buttons without hints only react to Left-click.
+     *
+     * @param entry     what is in a grid slot (a song, a queue position, a genre), or null for buttons
+     * @param queueView whether the Up next list is open (its corner button also offers Right-click)
+     */
+    static boolean accepts(int slot, Object entry, boolean queueView, ClickType click) {
+        return switch (slot) {
+            // Left-click: type a search; Right-click: clear it.
+            case SEARCH -> click == ClickType.LEFT || click == ClickType.RIGHT;
+            // Shift + Left-click: favorite.
+            case NOW_PLAYING -> click == ClickType.SHIFT_LEFT;
+            // Left-click: open Up next; inside it, Left-click goes back and Right-click clears it.
+            case QUEUE -> click == ClickType.LEFT || (queueView && click == ClickType.RIGHT);
+            // Left/Right-click: +10/-10; with Shift: +1/-1.
+            case VOLUME -> click == ClickType.LEFT || click == ClickType.RIGHT
+                    || click == ClickType.SHIFT_LEFT || click == ClickType.SHIFT_RIGHT;
+            // A song: Left-click plays it, Right-click plays it next, Shift + Left-click favorites it.
+            // Queue positions and genres: Left-click only.
+            default -> entry instanceof Song
+                    ? click == ClickType.LEFT || click == ClickType.RIGHT || click == ClickType.SHIFT_LEFT
+                    : click == ClickType.LEFT;
+        };
+    }
+
     void handleClick(Player player, int slot, ClickType click) {
         SessionManager sessions = plugin.sessions();
         Messages m = plugin.messages();
         RadioSession own = sessions.session(player);
         UUID host = sessions.hostOf(player.getUniqueId());
+        if (!accepts(slot, entries.get(slot), state.view == MenuState.View.QUEUE, click)) return;
 
         switch (slot) {
             case CATEGORIES -> {
@@ -457,7 +485,7 @@ public final class RadioMenu implements InventoryHolder {
                 state.showSongs();
             }
             case SEARCH -> {
-                if (click.isRightClick()) {
+                if (click == ClickType.RIGHT) {
                     state.search = null;
                     state.showSongs();
                 } else {
@@ -468,14 +496,14 @@ public final class RadioMenu implements InventoryHolder {
             }
             case NOW_PLAYING -> {
                 Song song = sessions.audibleSession(player).current();
-                if (click != ClickType.SHIFT_LEFT || song == null) return;
+                if (song == null) return;
                 toggleFavorite(player, own, song);
             }
             case QUEUE -> {
                 if (state.view != MenuState.View.QUEUE) {
                     state.view = MenuState.View.QUEUE;
                     state.page = 0;
-                } else if (click.isRightClick()) {
+                } else if (click == ClickType.RIGHT) {
                     own.clearQueue();
                     m.send(player, "queue.cleared");
                 } else {
@@ -549,10 +577,10 @@ public final class RadioMenu implements InventoryHolder {
     private boolean clickEntry(Player player, RadioSession own, Object entry, ClickType click) {
         Messages m = plugin.messages();
         if (entry instanceof Song song) {
-            // Shift + Left-click favorites, Right-click (with or without Shift) plays it next, Left-click plays now.
+            // Shift + Left-click favorites, Right-click plays it next, Left-click plays now (see accepts).
             if (click == ClickType.SHIFT_LEFT) {
                 toggleFavorite(player, own, song);
-            } else if (click.isRightClick()) {
+            } else if (click == ClickType.RIGHT) {
                 int position = own.enqueue(song);
                 if (position < 0) m.send(player, "queue.full", Messages.arg("limit", plugin.radioConfig().queueLimit()));
                 else m.send(player, "queue.added", Format.song(song), Messages.arg("position", position));
@@ -563,7 +591,6 @@ public final class RadioMenu implements InventoryHolder {
             return true;
         }
         if (entry instanceof Integer index) {
-            if (click != ClickType.LEFT) return false;
             Song removed = own.removeFromQueue(index);
             if (removed != null) m.send(player, "queue.removed", Format.song(removed));
             return removed != null;
