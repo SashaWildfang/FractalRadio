@@ -3,8 +3,6 @@
  */
 package com.sasha.radio.song;
 
-import org.bukkit.Sound;
-
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -25,29 +23,10 @@ import java.util.Map;
 public final class NbsDecoder {
 
     /** Vanilla instruments in NBS order. Anything past this list is a custom instrument and is skipped. */
-    private static final Sound[] INSTRUMENTS = {
-            Sound.BLOCK_NOTE_BLOCK_HARP,
-            Sound.BLOCK_NOTE_BLOCK_BASS,
-            Sound.BLOCK_NOTE_BLOCK_BASEDRUM,
-            Sound.BLOCK_NOTE_BLOCK_SNARE,
-            Sound.BLOCK_NOTE_BLOCK_HAT,
-            Sound.BLOCK_NOTE_BLOCK_GUITAR,
-            Sound.BLOCK_NOTE_BLOCK_FLUTE,
-            Sound.BLOCK_NOTE_BLOCK_BELL,
-            Sound.BLOCK_NOTE_BLOCK_CHIME,
-            Sound.BLOCK_NOTE_BLOCK_XYLOPHONE,
-            Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE,
-            Sound.BLOCK_NOTE_BLOCK_COW_BELL,
-            Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO,
-            Sound.BLOCK_NOTE_BLOCK_BIT,
-            Sound.BLOCK_NOTE_BLOCK_BANJO,
-            Sound.BLOCK_NOTE_BLOCK_PLING,
+    private static final String[] INSTRUMENTS = {
+            "harp", "bass", "basedrum", "snare", "hat", "guitar", "flute", "bell", "chime", "xylophone",
+            "iron_xylophone", "cow_bell", "didgeridoo", "bit", "banjo", "pling",
     };
-
-    /** NBS keys 33..57 (F#3..F#5) are the two octaves a vanilla note block can play. */
-    private static final int MIN_KEY = 33;
-    private static final int MAX_KEY = 57;
-    private static final int CENTER_KEY = 45;
 
     /** The client plays a limited number of sounds at once; more than this in one instant starts cutting notes. */
     private static final int MAX_NOTES_PER_TICK = 24;
@@ -55,17 +34,17 @@ public final class NbsDecoder {
     private NbsDecoder() {
     }
 
-    public static Song decode(Path file, String category) throws IOException {
+    public static Song decode(Path file, String category, NoteRange range) throws IOException {
         String fileName = file.getFileName().toString();
         String id = fileName.substring(0, fileName.length() - ".nbs".length());
         try {
-            return decode(id, category, Files.readAllBytes(file));
+            return decode(id, category, Files.readAllBytes(file), range);
         } catch (BufferUnderflowException | NegativeArraySizeException e) {
             throw new IOException("File is truncated or not a valid .nbs file", e);
         }
     }
 
-    private static Song decode(String id, String category, byte[] data) throws IOException {
+    private static Song decode(String id, String category, byte[] data, NoteRange range) throws IOException {
         ByteBuffer in = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Header. A leading zero length marks the Open NBS format, which carries a version number.
@@ -144,7 +123,7 @@ public final class NbsDecoder {
         for (int i = 0; i < songLength; i++) byTick.add(null);
         int playable = 0;
         for (RawNote n : raw) {
-            Note note = resolve(n, vanillaInstruments, layerVolume[n.layer], layerPanning[n.layer]);
+            Note note = resolve(n, vanillaInstruments, layerVolume[n.layer], layerPanning[n.layer], range);
             if (note == null) continue;
             List<Note> list = byTick.get(n.tick);
             if (list == null) byTick.set(n.tick, list = new ArrayList<>(4));
@@ -195,23 +174,20 @@ public final class NbsDecoder {
         return result.toArray(Note[]::new);
     }
 
-    private static Note resolve(RawNote n, int vanillaInstruments, int layerVolume, int layerPanning) {
+    private static Note resolve(RawNote n, int vanillaInstruments, int layerVolume, int layerPanning, NoteRange range) {
         if (n.instrument >= vanillaInstruments || n.instrument >= INSTRUMENTS.length) {
             return null; // custom instrument: needs a resource pack, not supported
         }
         float volume = (layerVolume / 100f) * (n.velocity / 100f);
         if (volume <= 0) return null;
 
-        // Fine pitch is in cents. Notes outside the note block range are moved by octaves into range.
-        float key = n.key + n.pitch / 100f;
-        while (key < MIN_KEY) key += 12;
-        while (key > MAX_KEY) key -= 12;
-        float pitch = (float) Math.pow(2.0, (key - CENTER_KEY) / 12.0);
+        // Fine pitch is in cents. NoteRange picks the sound and pitch, moving notes into range if needed.
+        NoteRange.Resolved resolved = range.resolve(INSTRUMENTS[n.instrument], n.key + n.pitch / 100f);
 
         int pan = (n.panning - 100) + (layerPanning - 100);
         pan = Math.max(-100, Math.min(100, pan));
 
-        return new Note(INSTRUMENTS[n.instrument], Math.min(1f, volume), pitch, pan / 100f);
+        return new Note(resolved.sound(), Math.min(1f, volume), resolved.pitch(), pan / 100f);
     }
 
     private static int unsigned(ByteBuffer in) {
@@ -230,7 +206,7 @@ public final class NbsDecoder {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    private record NoteKey(Sound sound, float pitch) {
+    private record NoteKey(String sound, float pitch) {
     }
 
     private record RawNote(int tick, int layer, int instrument, int key, int velocity, int panning, int pitch) {

@@ -13,10 +13,13 @@ Get the latest `Radio-<version>.jar` from the **[Releases page](https://github.c
 ## Features
 
 - **Built-in note block player**: plays every `.nbs` format version, with stereo and fine pitch. No other plugins needed.
+- **Full note range with a resource pack**: notes outside the note block's two octaves (common in MIDI imports) normally move by an octave to fit. With `resource-pack.extended-range` on, they play at their real pitch using extra sounds made by [`tools/make_note_sounds.py`](tools/make_note_sounds.py). With `--soft` and `pack-sounds-for-all-notes`, every note uses smoother versions of the instruments (gentler attack, rounded highs, a short ring-out), for the radio only. Or use [`tools/make_real_note_sounds.py`](tools/make_real_note_sounds.py) for real instrument recordings (piano, harp, plucked bass, flute, glockenspiel, marimba, drums...) from the free [VSCO 2 Community Edition](https://github.com/sgossner/VSCO-2-CE) library (CC0).
+- **Pause is remembered**: a player who leaves with the radio paused comes back to the same song, still paused.
 - **Precise timing**: notes play on their own timer at their exact time, not rounded to server ticks, so songs at any tempo stay smooth. Stacked duplicate notes are merged so busy songs stay clean.
 - **Personal radios**: play, pause, skip, previous, shuffle, repeat and volume for every player
 - **GUI**: categories, favorites, search, sorting, paging, live progress and "up next"
 - **Genres**: each folder in the song library becomes a genre in the menu
+- **Most played and Trending**: the server counts plays (songs heard at least halfway) and skips, and the GUI can sort by most played or by what's trending lately. Trending songs get a badge. Counts are kept in `stats.json`.
 - **Up next**: Right-click a song to play it next
 - **Favorites**: Shift + Left-click a song to star it, then browse your favorites
 - **Lobby station**: a shared, always-on radio everyone can tune in to

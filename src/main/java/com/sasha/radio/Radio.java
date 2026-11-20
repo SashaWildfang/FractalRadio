@@ -13,7 +13,9 @@ import com.sasha.radio.hook.RadioExpansion;
 import com.sasha.radio.listener.ConnectionListener;
 import com.sasha.radio.session.RadioSession;
 import com.sasha.radio.session.SessionManager;
+import com.sasha.radio.song.NoteRange;
 import com.sasha.radio.song.SongLibrary;
+import com.sasha.radio.stats.SongStats;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -38,12 +40,15 @@ public final class Radio extends JavaPlugin {
     private MenuService menus;
     private NowPlayingBar nowPlayingBar;
     private SongDownloader downloader;
+    private SongStats stats;
     private Object placeholderExpansion;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         loadSettings();
+        stats = new SongStats(getDataFolder().toPath().resolve("stats.json"), getLogger());
+        stats.load();
 
         sessions = new SessionManager(this);
         sessions.applyStationConfig();
@@ -60,6 +65,7 @@ public final class Radio extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this, sessions::tick, 1L, 1L);
         getServer().getScheduler().runTaskTimer(this, nowPlayingBar::update, 10L, 10L);
         getServer().getScheduler().runTaskTimer(this, menus::refreshOpenMenus, 20L, 20L);
+        getServer().getScheduler().runTaskTimer(this, this::saveStats, 20L * 300, 20L * 300);
 
         // Players already online (plugin loaded at runtime) get sessions straight away.
         getServer().getOnlinePlayers().forEach(sessions::session);
@@ -76,6 +82,16 @@ public final class Radio extends JavaPlugin {
         if (menus != null) menus.closeAll();
         if (nowPlayingBar != null) nowPlayingBar.shutdown();
         if (sessions != null) sessions.shutdown();
+        if (stats != null) {
+            Runnable write = stats.save();
+            if (write != null) write.run();
+        }
+    }
+
+    /** Writes play counts to stats.json off the main thread, if they changed. */
+    private void saveStats() {
+        Runnable write = stats.save();
+        if (write != null) getServer().getScheduler().runTaskAsynchronously(this, write);
     }
 
     public RadioConfig radioConfig() {
@@ -96,6 +112,10 @@ public final class Radio extends JavaPlugin {
 
     public MenuService menus() {
         return menus;
+    }
+
+    public SongStats stats() {
+        return stats;
     }
 
     public NowPlayingBar nowPlayingBar() {
@@ -160,8 +180,9 @@ public final class Radio extends JavaPlugin {
         Path folder = songFolder();
         int minSeconds = config.minSongSeconds();
         int maxSeconds = config.maxSongSeconds();
+        NoteRange range = config.noteRange();
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
-            SongLibrary loaded = SongLibrary.load(folder, getLogger(), minSeconds, maxSeconds);
+            SongLibrary loaded = SongLibrary.load(folder, getLogger(), minSeconds, maxSeconds, range);
             if (!isEnabled()) return;
             getServer().getScheduler().runTask(this, () -> {
                 library = loaded;

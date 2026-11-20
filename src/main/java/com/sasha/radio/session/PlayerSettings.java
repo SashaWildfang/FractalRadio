@@ -30,6 +30,9 @@ public final class PlayerSettings {
     /** null = use the server default from config.yml */
     private BarMode bar;
     private final Set<String> favorites;
+    /** The song the player had paused when they left (null = they weren't paused), and where in it. */
+    private String pausedSong;
+    private double pausedAt;
 
     private PlayerSettings(int volume, boolean shuffle, boolean repeat, SortMode sort, BarMode bar, Set<String> favorites) {
         this.volume = volume;
@@ -44,7 +47,7 @@ public final class PlayerSettings {
         PersistentDataContainer data = player.getPersistentDataContainer();
         String bar = data.get(keys.bar, PersistentDataType.STRING);
         List<String> favorites = data.getOrDefault(keys.favorites, PersistentDataType.LIST.strings(), List.of());
-        return new PlayerSettings(
+        PlayerSettings settings = new PlayerSettings(
                 clampVolume(data.getOrDefault(keys.volume, PersistentDataType.INTEGER, config.defaultVolume())),
                 data.getOrDefault(keys.shuffle, PersistentDataType.BOOLEAN, config.defaultShuffle()),
                 data.getOrDefault(keys.repeat, PersistentDataType.BOOLEAN, false),
@@ -52,6 +55,9 @@ public final class PlayerSettings {
                 bar == null ? null : BarMode.parse(bar, null),
                 new LinkedHashSet<>(favorites)
         );
+        settings.pausedSong = data.get(keys.pausedSong, PersistentDataType.STRING);
+        settings.pausedAt = data.getOrDefault(keys.pausedAt, PersistentDataType.DOUBLE, 0.0);
+        return settings;
     }
 
     /** Settings for the lobby station, which has no player to store them on. */
@@ -68,6 +74,32 @@ public final class PlayerSettings {
         if (bar == null) data.remove(keys.bar);
         else data.set(keys.bar, PersistentDataType.STRING, bar.name());
         data.set(keys.favorites, PersistentDataType.LIST.strings(), List.copyOf(favorites));
+        if (pausedSong == null) {
+            data.remove(keys.pausedSong);
+            data.remove(keys.pausedAt);
+        } else {
+            data.set(keys.pausedSong, PersistentDataType.STRING, pausedSong);
+            data.set(keys.pausedAt, PersistentDataType.DOUBLE, pausedAt);
+        }
+    }
+
+    /** True if the player left with their radio paused, so it should stay quiet when they come back. */
+    boolean leftPaused() {
+        return pausedSong != null;
+    }
+
+    String pausedSong() {
+        return pausedSong;
+    }
+
+    double pausedAt() {
+        return pausedAt;
+    }
+
+    /** Remembers (or with null, forgets) the song the radio is paused on. */
+    void paused(String songId, double seconds) {
+        this.pausedSong = songId;
+        this.pausedAt = songId == null ? 0 : seconds;
     }
 
     public int volume() {
@@ -132,11 +164,12 @@ public final class PlayerSettings {
     }
 
     record Keys(NamespacedKey volume, NamespacedKey shuffle, NamespacedKey repeat, NamespacedKey sort,
-                NamespacedKey bar, NamespacedKey favorites) {
+                NamespacedKey bar, NamespacedKey favorites, NamespacedKey pausedSong, NamespacedKey pausedAt) {
         Keys(Plugin plugin) {
             this(new NamespacedKey(plugin, "volume"), new NamespacedKey(plugin, "shuffle"),
                     new NamespacedKey(plugin, "repeat"), new NamespacedKey(plugin, "sort"),
-                    new NamespacedKey(plugin, "bar"), new NamespacedKey(plugin, "favorites"));
+                    new NamespacedKey(plugin, "bar"), new NamespacedKey(plugin, "favorites"),
+                    new NamespacedKey(plugin, "paused-song"), new NamespacedKey(plugin, "paused-at"));
         }
     }
 }

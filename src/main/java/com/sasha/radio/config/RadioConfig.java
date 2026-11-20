@@ -4,6 +4,7 @@
 package com.sasha.radio.config;
 
 import net.kyori.adventure.bossbar.BossBar;
+import com.sasha.radio.song.NoteRange;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
@@ -40,7 +41,8 @@ public record RadioConfig(
         String repository,
         boolean clickSound,
         Map<String, Material> categoryIcons,
-        Material defaultCategoryIcon
+        Material defaultCategoryIcon,
+        NoteRange noteRange
 ) {
 
     public enum OnJoin { PERSONAL, STATION, NONE }
@@ -110,8 +112,22 @@ public record RadioConfig(
                 repository,
                 config.getBoolean("gui.click-sound", true),
                 Map.copyOf(icons),
-                defaultIcon
+                defaultIcon,
+                noteRange(config, logger)
         );
+    }
+
+    private static NoteRange noteRange(FileConfiguration config, Logger logger) {
+        boolean extended = config.getBoolean("resource-pack.extended-range", false);
+        boolean allNotes = config.getBoolean("resource-pack.pack-sounds-for-all-notes", false);
+        if (!extended && !allNotes) return NoteRange.VANILLA;
+        String pattern = config.getString("resource-pack.extended-sound", NoteRange.DEFAULT_PATTERN).trim();
+        if (!pattern.contains("{instrument}") || !pattern.contains("{octave}")) {
+            logger.warning("config.yml resource-pack.extended-sound must contain {instrument} and {octave}, using "
+                    + NoteRange.DEFAULT_PATTERN);
+            pattern = NoteRange.DEFAULT_PATTERN;
+        }
+        return new NoteRange(extended, allNotes, pattern);
     }
 
     private static int clamp(int value, int min, int max) {

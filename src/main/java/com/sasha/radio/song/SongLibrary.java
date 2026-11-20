@@ -57,7 +57,7 @@ public final class SongLibrary {
      * Reads every .nbs file under {@code folder}, keeping songs between {@code minSeconds} and {@code maxSeconds}
      * long (0 = no limit). Blocking: call off the main thread.
      */
-    public static SongLibrary load(Path folder, Logger logger, int minSeconds, int maxSeconds) {
+    public static SongLibrary load(Path folder, Logger logger, int minSeconds, int maxSeconds, NoteRange range) {
         try {
             Files.createDirectories(folder);
         } catch (IOException e) {
@@ -84,7 +84,7 @@ public final class SongLibrary {
             Path relative = folder.relativize(file);
             String category = relative.getNameCount() > 1 ? relative.getName(0).toString() : DEFAULT_CATEGORY;
             try {
-                Song song = NbsDecoder.decode(file, category);
+                Song song = NbsDecoder.decode(file, category, range);
                 int seconds = song.durationSeconds();
                 if ((minSeconds > 0 && seconds < minSeconds) || (maxSeconds > 0 && seconds > maxSeconds)) {
                     outsideLimits++;

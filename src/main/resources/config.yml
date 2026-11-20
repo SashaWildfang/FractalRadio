@@ -54,6 +54,29 @@ songs:
   max-length: 270
 
 
+# ── Resource pack ───────────────────────────────────────────────
+# A note block only plays two octaves (F#3 to F#5). Notes outside that
+# range, which most MIDI imports have, are normally moved up or down
+# an octave to fit, which can make melodies jump around.
+resource-pack:
+  # Play every note at its real pitch using extra note sounds from the
+  # server's resource pack (made by tools/make_note_sounds.py in the
+  # Radio repository). Only turn this on when every player gets that
+  # pack, or out-of-range notes will be silent for them.
+  extended-range: false
+
+  # Play every note with the pack's sounds, not only out-of-range ones,
+  # so the radio can sound different from real note blocks. Make the
+  # pack's sounds with tools/make_note_sounds.py --soft for smoother,
+  # less choppy songs. Needs the pack, like extended-range.
+  pack-sounds-for-all-notes: false
+
+  # Sound name of the note sounds in the pack.
+  # {instrument} is harp, bass, bell, ... and {octave} is -2, -1, 0, 1
+  # or 2 (each step is two octaves, 0 is the normal range).
+  extended-sound: "radio:note.{instrument}_{octave}"
+
+
 # ── Worlds ──────────────────────────────────────────────────────
 worlds:
   # Worlds the radio plays in. Leave empty to play in every world.

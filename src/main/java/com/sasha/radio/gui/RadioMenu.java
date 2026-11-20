@@ -375,6 +375,10 @@ public final class RadioMenu implements InventoryHolder {
             if (own.settings().isFavorite(song.id())) badges.add(m.component("gui.song.badge-favorite"));
             int position = own.queuePosition(song);
             if (position > 0) badges.add(m.component("gui.song.badge-queued", Messages.arg("position", position)));
+            if (plugin.stats().isTrending(song)) badges.add(m.component("gui.song.badge-trending"));
+            int plays = plugin.stats().plays(song);
+            if (plays > 0) badges.add(m.component(plays == 1 ? "gui.song.badge-play" : "gui.song.badge-plays",
+                    Messages.arg("plays", plays)));
             TagResolver args = TagResolver.resolver(Format.song(song),
                     Messages.arg("badges", Component.join(net.kyori.adventure.text.JoinConfiguration.separator(Component.text(" · ")), badges)));
             boolean playing = current != null && current.id().equals(song.id());
@@ -422,7 +426,7 @@ public final class RadioMenu implements InventoryHolder {
             String query = SongLibrary.normalize(state.search);
             songs = songs.filter(s -> SongLibrary.matches(s, query));
         }
-        return songs.sorted(own.settings().sort().comparator()).toList();
+        return songs.sorted(own.settings().sort().comparator(plugin.stats())).toList();
     }
 
     private List<Object> categoryEntries() {

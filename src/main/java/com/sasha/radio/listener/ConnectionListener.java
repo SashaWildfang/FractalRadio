@@ -22,6 +22,11 @@ public final class ConnectionListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         var session = plugin.sessions().session(player);
+        // Left with the radio paused: bring back the paused song and don't start any music.
+        if (session.leftPaused()) {
+            session.startIfIdle();
+            return;
+        }
         switch (plugin.radioConfig().onJoin()) {
             case PERSONAL -> session.startIfIdle();
             case STATION -> {

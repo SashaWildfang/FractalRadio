@@ -9,6 +9,7 @@ import com.sasha.radio.config.RadioConfig;
 import com.sasha.radio.song.Playback;
 import com.sasha.radio.song.Song;
 import com.sasha.radio.song.SongLibrary;
+import com.sasha.radio.stats.SongStats;
 import com.sasha.radio.util.Format;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -55,6 +56,10 @@ public final class SessionManager {
         return plugin.radioConfig();
     }
 
+    SongStats stats() {
+        return plugin.stats();
+    }
+
     PlayerSettings.Keys keys() {
         return keys;
     }
@@ -91,10 +96,18 @@ public final class SessionManager {
             if (listener != null) messages().send(listener, "listen.host-left", Messages.arg("name", player.getName()));
         }
         RadioSession session = sessions.remove(id);
-        if (session != null) session.stop();
+        if (session != null) {
+            session.savePausedState(player);
+            session.stop();
+        }
     }
 
     public void shutdown() {
+        // Players are saved after plugins disable, so a paused radio is still paused after a restart.
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            RadioSession session = sessions.get(player.getUniqueId());
+            if (session != null) session.savePausedState(player);
+        }
         audio.stop();
         sessions.values().forEach(RadioSession::stop);
         sessions.clear();

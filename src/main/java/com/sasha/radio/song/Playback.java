@@ -57,6 +57,19 @@ public final class Playback {
         nextTick = 0;
     }
 
+    /** Jumps to a position in seconds, keeping the clock running or paused as it was. */
+    public synchronized void seek(double seconds) {
+        long now = System.nanoTime();
+        double ticks = Math.max(0, Math.min(seconds * song.tempo(), song.length()));
+        anchor = (running ? now : pausedAt) - (long) (ticks / song.tempo() * 1_000_000_000.0);
+        nextTick = (int) Math.ceil(ticks);
+    }
+
+    /** Current position in seconds. */
+    public synchronized double positionSeconds() {
+        return position(System.nanoTime()) / song.tempo();
+    }
+
     /** Adds every note that is due by {@code now} to {@code out}. Called by the audio thread. */
     public synchronized void drain(long now, List<Note> out) {
         if (!running) return;

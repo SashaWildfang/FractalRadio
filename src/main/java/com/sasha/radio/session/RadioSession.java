@@ -82,6 +82,7 @@ public final class RadioSession {
 
     /** Plays a chosen song right now. */
     public void play(Song song) {
+        recordEnd(true);
         queue.remove(song);
         remember(current());
         start(song, true);
@@ -91,6 +92,7 @@ public final class RadioSession {
     public boolean skip() {
         Song next = takeNext();
         if (next == null) return false;
+        recordEnd(true);
         remember(current());
         start(next, true);
         return true;
@@ -103,6 +105,7 @@ public final class RadioSession {
             restart();
             return;
         }
+        recordEnd(false);
         if (current() != null) queue.addFirst(current()); // skipping forward again returns here
         start(previous, true);
     }
@@ -125,11 +128,42 @@ public final class RadioSession {
         else paused = false;
     }
 
-    /** Starts a song if nothing is loaded yet (autoplay). A paused song stays paused. */
+    /**
+     * Starts a song if nothing is loaded yet (autoplay). A paused song stays paused, and so does a radio
+     * its player had paused when they last left: that song is loaded again, paused where they left it.
+     */
     public void startIfIdle() {
         if (playback != null) return;
+        if (restorePaused()) return;
         Song next = takeNext();
         if (next != null) start(next, true);
+    }
+
+    /** True if the player left with this radio paused and it should stay quiet until they resume. */
+    public boolean leftPaused() {
+        return settings.leftPaused();
+    }
+
+    /** Called when the player leaves (or the server stops): remembers whether the radio was paused. */
+    void savePausedState(Player player) {
+        if (isPaused()) settings.paused(current().id(), playback.positionSeconds());
+        else settings.paused(null, 0);
+        settings.save(player, manager.keys());
+    }
+
+    /** Loads the song the player left paused on, still paused. Returns false if they hadn't paused. */
+    private boolean restorePaused() {
+        if (!settings.leftPaused()) return false;
+        SongLibrary library = manager.library();
+        if (library.isEmpty()) return true; // songs are still loading: stay quiet and try again after
+        Song song = library.byId(settings.pausedSong());
+        double at = settings.pausedAt();
+        settings.paused(null, 0);
+        if (song == null) return true; // the song is gone; stay quiet, play resumes with the next song
+        playback = new Playback(song);
+        playback.seek(at);
+        paused = true;
+        return true;
     }
 
     /** The song that will play after this one, or null if there are no songs. */
@@ -216,6 +250,7 @@ public final class RadioSession {
 
     /** Called by the ticker when the current song reaches its end. */
     void onSongFinished() {
+        recordEnd(false);
         if (settings.repeat()) {
             playback.restart();
             return;
@@ -230,9 +265,21 @@ public final class RadioSession {
     }
 
     void stop() {
+        recordEnd(false);
         if (playback != null) playback.stop();
         playback = null;
         paused = false;
+    }
+
+    /**
+     * Counts the current song for "Most played" and "Trending" as it ends: a play if it was heard at least
+     * halfway, a skip if the player moved on before that. The station isn't counted: nobody chose its songs.
+     */
+    private void recordEnd(boolean skipped) {
+        if (playback == null || manager.isStation(this)) return;
+        Song song = playback.song();
+        if (playback.positionSeconds() >= song.durationSeconds() / 2.0) manager.stats().played(song);
+        else if (skipped) manager.stats().skipped(song);
     }
 
     private void start(Song song, boolean manual) {
