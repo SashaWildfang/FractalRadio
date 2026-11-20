@@ -21,7 +21,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.stream.Stream;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -45,6 +48,7 @@ public final class Radio extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        copyOldFolder();
         saveDefaultConfig();
         loadSettings();
         stats = new SongStats(getDataFolder().toPath().resolve("stats.json"), getLogger());
@@ -163,6 +167,26 @@ public final class Radio extends JavaPlugin {
                 if (done != null) done.accept(finalResult, finalError);
             });
         });
+    }
+
+    /**
+     * FractalRadio keeps its files in plugins/FractalRadio. The first time it starts where Radio ran before, it
+     * copies plugins/Radio there (config, messages, songs, stats), leaving the old folder as a backup.
+     */
+    private void copyOldFolder() {
+        Path folder = getDataFolder().toPath();
+        Path old = folder.resolveSibling("Radio");
+        if (Files.exists(folder) || !Files.isDirectory(old)) return;
+        try (Stream<Path> files = Files.walk(old)) {
+            for (Path source : (Iterable<Path>) files::iterator) {
+                Path target = folder.resolve(old.relativize(source).toString());
+                if (Files.isDirectory(source)) Files.createDirectories(target);
+                else Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+            }
+            getLogger().info("Copied your old plugins/Radio folder to plugins/FractalRadio (the old one is kept as a backup).");
+        } catch (IOException e) {
+            getLogger().severe("Could not copy plugins/Radio to plugins/FractalRadio: " + e.getMessage());
+        }
     }
 
     private void loadSettings() {

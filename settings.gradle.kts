@@ -1,1 +1,1 @@
-rootProject.name = "Radio"
+rootProject.name = "FractalRadio"

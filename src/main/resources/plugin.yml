@@ -1,4 +1,6 @@
-name: Radio
+name: FractalRadio
+# Plugins that look for "Radio" (like FractalLobby's jukebox item) still find it.
+provides: [Radio]
 version: '${version}'
 main: com.sasha.radio.Radio
 api-version: '1.21.11'

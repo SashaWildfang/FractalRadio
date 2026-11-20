@@ -4,7 +4,7 @@
 # │       Built by Sasha Wildfang for Fractal Network.           │
 # └──────────────────────────────────────────────────────────────┘
 #
-#  Songs live in plugins/Radio/songs/. Each subfolder is a category
+#  Songs live in plugins/FractalRadio/songs/. Each subfolder is a category
 #  in the GUI (e.g. songs/Christmas/Jingle Bells.nbs).
 #  Every message and GUI label is in messages.yml, along with the
 #  font (tiny "small caps" text or normal): see format.font there.
@@ -115,7 +115,7 @@ station:
 
 
 # ── Song downloads ──────────────────────────────────────────────
-# Keeps plugins/Radio/songs/ in sync with the song library
+# Keeps plugins/FractalRadio/songs/ in sync with the song library
 # (https://github.com/SashaWildfang/Radio-Songs):
 #  - songs added or changed in the repository are downloaded
 #  - songs removed from the repository are removed here too
