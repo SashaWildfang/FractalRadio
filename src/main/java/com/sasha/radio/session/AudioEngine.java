@@ -42,9 +42,9 @@ final class AudioEngine implements Runnable {
     /** How far (in blocks) a fully panned note is placed to the side of the listener. */
     private static final double STEREO_DISTANCE = 2.0;
     /** How long notes for a Bedrock player are collected before they are sent together. */
-    private static final long BEDROCK_WINDOW_NANOS = 50_000_000L;
+    private static long BEDROCK_WINDOW_NANOS = 50_000_000L;
     /** The most notes a Bedrock player hears at once. */
-    static final int BEDROCK_MAX_NOTES = 8;
+    static int BEDROCK_MAX_NOTES = 8;
 
     /** One listener as of the last server tick. */
     record Listener(Player player, float volume, World world, double x, double y, double z, double rightX, double rightZ,
@@ -103,6 +103,18 @@ final class AudioEngine implements Runnable {
 
     AudioEngine(Logger logger) {
         this.logger = logger;
+        // bedrock.batch-ms and bedrock.max-notes in config.yml (read when the plugin starts).
+        try {
+            var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("FractalRadio");
+            if (plugin == null) plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("Radio");
+            if (plugin != null) {
+                var config = plugin.getConfig();
+                BEDROCK_WINDOW_NANOS = Math.max(10, Math.min(500, config.getInt("bedrock.batch-ms", 50))) * 1_000_000L;
+                BEDROCK_MAX_NOTES = Math.max(1, Math.min(32, config.getInt("bedrock.max-notes", 8)));
+            }
+        } catch (RuntimeException | LinkageError ignored) {
+            // defaults
+        }
     }
 
     void start() {
